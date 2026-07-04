@@ -19,3 +19,6 @@ A simple "Hello World" program written in Kotlin as the first assignment for CSE
 2. Clone this repository
 3. Navigate to the project directory
 4. Run the program: HelloWorld.kt
+
+## Time
+Writing the program in Kotlin took about 15 minutes, thinking about whether to add anything more than just "Hello World!"
