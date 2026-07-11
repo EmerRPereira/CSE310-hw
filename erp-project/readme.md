@@ -63,9 +63,6 @@ Main.kt
 - [ ] Mobile APP
 
 ```
-{
-  "firstName": "Emerson",
-  "lastName": "Pereira",
-  "age": 54
-}
+Emerson Ronald Pereira
+CSE310 course
 ```
