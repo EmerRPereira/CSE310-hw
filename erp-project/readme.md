@@ -8,10 +8,15 @@ java -jar Main.jar
 
 ## Code Structure
 Main.kt
+
 '├── MenuItem (data class)
+
 '│   ├── id: Int
+
 '│   ├── name: String
+
 '│   ├── price: Double
+
 '│   └── category: String
 
 '│
