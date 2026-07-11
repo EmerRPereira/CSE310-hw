@@ -8,26 +8,48 @@ java -jar Main.jar
 
 ## Code Structure
 'Main.kt
+
 '├── MenuItem (data class)
+
 '│   ├── id: Int
+
 '│   ├── name: String
+
 '│   ├── price: Double
+
 '│   └── category: String
+
 '│
+
 '├── Order (class)
+
 '│   ├── addItem()
+
 '│   ├── removeItem()
+
 '│   ├── calculateTotal()
+
 '│   ├── getItems()
+
 '│   └── clear()
+
 '│
+
 '├── main()
+
 '│   ├── Initialize menu
+
 '│   ├── Display main menu
+
 '│   └── Handle user input
+
 '│
+
 '├── displayMenu()
+
 '├── addItemToOrder()
+
 '├── displayOrder()
+
 '└── checkout()
 
