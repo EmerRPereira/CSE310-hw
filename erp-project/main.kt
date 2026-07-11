@@ -107,7 +107,7 @@ fun displayMenu(menu: List<MenuItem>) {
     categories.forEach { category ->
         println("\n $category:")
         menu.filter { it.category == category }.forEach { item ->
-            println("   ${item.id}. ${item.name} - $${"%.2f".format(item.price)}")
+            println(" ${item.id}. ${item.name} - $${"%.2f".format(item.price)}")
         }
     }
 }
@@ -157,12 +157,12 @@ fun displayOrder(order: Order) {
     
     println("\n--- YOUR ORDER ---")
     items.forEach { (item, quantity) ->
-        println("   ${item.name} x$quantity = $${"%.2f".format(item.price * quantity)}")
+        println(" ${item.name} x$quantity = $${"%.2f".format(item.price * quantity)}")
     }
     
     val total = order.calculateTotal()
     println("=".repeat(30))
-    println("   TOTAL: $${"%.2f".format(total)}")
+    println(" TOTAL: $${"%.2f".format(total)}")
 }
 
 /**
@@ -182,9 +182,9 @@ fun checkout(order: Order) {
     print("Customer name: ")
     val name = readlnOrNull() ?: "Customer"
     
-    println("\n Order finalized for $name!")
-    println(" Total to pay: $${"%.2f".format(order.calculateTotal())}")
-    println(" Status: Pending")
+    println("\n--- Order finalized for $name!")
+    println("Total to pay: $${"%.2f".format(order.calculateTotal())}")
+    println("Status: Pending")
     println("\nThank you for your preference!")
     
     order.clear()
