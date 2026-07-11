@@ -57,3 +57,7 @@ Main.kt
 
 '└── checkout()
 
+## Task List
+- [x] Kotlin
+- [ ] SQL
+- [ ] Mobile APP
