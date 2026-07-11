@@ -7,16 +7,11 @@ kotlinc Main.kt -include-runtime -d Main.jar
 java -jar Main.jar
 
 ## Code Structure
-'Main.kt
-
+Main.kt
 '├── MenuItem (data class)
-
 '│   ├── id: Int
-
 '│   ├── name: String
-
 '│   ├── price: Double
-
 '│   └── category: String
 
 '│
