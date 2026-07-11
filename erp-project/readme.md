@@ -9,6 +9,11 @@ kotlinc Main.kt -include-runtime -d Main.jar
 
 java -jar Main.jar
 
+### Prerequisites
+- **Java JDK 11+** (Java 17 or 21 recommended for stability)
+- **Kotlin Compiler** (included with IntelliJ IDEA or downloadable separately)
+- **IntelliJ IDEA** (or any Kotlin-compatible IDE)
+- **VS Code** (with extensions Kotlin)
 
 ## Code Structure
 Main.kt
