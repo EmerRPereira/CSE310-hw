@@ -105,7 +105,7 @@ fun displayMenu(menu: List<MenuItem>) {
     val categories = menu.map { it.category }.distinct()
     
     categories.forEach { category ->
-        println("\n📌 $category:")
+        println("\n $category:")
         menu.filter { it.category == category }.forEach { item ->
             println("   ${item.id}. ${item.name} - $${"%.2f".format(item.price)}")
         }
@@ -141,7 +141,7 @@ fun addItemToOrder(menu: List<MenuItem>, order: Order, scanner: Scanner) {
     }
     
     order.addItem(item, quantity)
-    println("✅ ${item.name} added to order!")
+    println(" ${item.name} added to order!")
 }
 
 /**
@@ -151,7 +151,7 @@ fun displayOrder(order: Order) {
     val items = order.getItems()
     
     if (items.isEmpty()) {
-        println("\n🛒 Your cart is empty!")
+        println("\n Your cart is empty!")
         return
     }
     
@@ -182,10 +182,10 @@ fun checkout(order: Order) {
     print("Customer name: ")
     val name = readlnOrNull() ?: "Customer"
     
-    println("\n✅ Order finalized for $name!")
-    println("📋 Total to pay: $${"%.2f".format(order.calculateTotal())}")
-    println("🕒 Status: Pending")
-    println("\nThank you for your preference! 🍦")
+    println("\n Order finalized for $name!")
+    println(" Total to pay: $${"%.2f".format(order.calculateTotal())}")
+    println(" Status: Pending")
+    println("\nThank you for your preference!")
     
     order.clear()
 }
