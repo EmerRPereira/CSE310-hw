@@ -33,7 +33,7 @@ The application uses a normalized database schema with six main tables:
 - `order_items` - Individual items within orders
 
 ## Project Structure
-IMAGEM
+![Project Structure Ice Cream Shop](images/ProjectStructure.jpg)
 
 ## Key Features
 
