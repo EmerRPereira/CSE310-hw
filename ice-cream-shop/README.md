@@ -34,28 +34,28 @@ The application uses a normalized database schema with six main tables:
 
 ## Project Structure
 ice-cream-shop/
-├── src/main/kotlin/com/icecream/
-│ ├── Main.kt # Application entry point
-│ ├── models/ # Data classes
-│ │ ├── Customer.kt
-│ │ ├── Product.kt
-│ │ └── Order.kt
-│ ├── database/ # Database layer
-│ │ ├── DatabaseConnection.kt # Connection management
-│ │ ├── CustomerRepository.kt
-│ │ ├── ProductRepository.kt
-│ │ └── OrderRepository.kt
-│ └── services/ # Business logic
-│ ├── MenuService.kt
-│ └── OrderService.kt
-├── database/ # SQL scripts
-│ ├── 01_create_database.sql
-│ ├── 02_create_tables.sql
-│ ├── 03_insert_data.sql
-│ ├── 04_create_views.sql
-│ └── 05_create_indexes.sql
-├── build.gradle.kts # Build configuration
-└── README.md
+'├── src/main/kotlin/com/icecream/
+'│ ├── Main.kt # Application entry point
+'│ ├── models/ # Data classes
+'│ │ ├── Customer.kt
+'│ │ ├── Product.kt
+'│ │ └── Order.kt
+'│ ├── database/ # Database layer
+'│ │ ├── DatabaseConnection.kt # Connection management
+'│ │ ├── CustomerRepository.kt
+'│ │ ├── ProductRepository.kt
+'│ │ └── OrderRepository.kt
+'│ └── services/ # Business logic
+'│ ├── MenuService.kt
+'│ └── OrderService.kt
+'├── database/ # SQL scripts
+'│ ├── 01_create_database.sql
+'│ ├── 02_create_tables.sql
+'│ ├── 03_insert_data.sql
+'│ ├── 04_create_views.sql
+'│ └── 05_create_indexes.sql
+'├── build.gradle.kts # Build configuration
+'└── README.md
 
 
 ## Key Features
