@@ -133,47 +133,49 @@ class OrderRepository {
         return items
     }
 
-    /**
-     * Insert a new order
-     * Returns the generated order ID
-     */
-    fun insertOrder(order: Order): Int {
-        val query = """
-            INSERT INTO orders (
-                customer_id, 
-                status, 
-                total_amount, 
-                payment_type_id, 
-                delivery_address, 
-                special_instructions
-            ) VALUES (?, ?, ?, ?, ?, ?)
-            RETURNING order_id
-        """.trimIndent()
+/**
+ * Insert a new order
+ * Returns the generated order ID
+ */
+fun insertOrder(order: Order): Int {
+    val query = """
+        INSERT INTO orders (
+            customer_id, 
+            status, 
+            total_amount, 
+            payment_type_id, 
+            delivery_address, 
+            special_instructions
+        ) VALUES (?, ?, ?, ?, ?, ?)
+    """.trimIndent()
 
-        DatabaseConnection.getConnection().use { conn ->
-            conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS).use { pstmt ->
-                pstmt.setInt(1, order.customerId)
-                pstmt.setString(2, order.status)
-                pstmt.setDouble(3, order.totalAmount)
-                
-                if (order.paymentTypeId != null) {
-                    pstmt.setInt(4, order.paymentTypeId)
-                } else {
-                    pstmt.setNull(4, java.sql.Types.INTEGER)
-                }
-                
-                pstmt.setString(5, order.deliveryAddress)
-                pstmt.setString(6, order.specialInstructions)
+    DatabaseConnection.getConnection().use { conn ->
+        conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS).use { pstmt ->
+            pstmt.setInt(1, order.customerId)
+            pstmt.setString(2, order.status)
+            pstmt.setDouble(3, order.totalAmount)
+            
+            if (order.paymentTypeId != null) {
+                pstmt.setInt(4, order.paymentTypeId)
+            } else {
+                pstmt.setNull(4, java.sql.Types.INTEGER)
+            }
+            
+            pstmt.setString(5, order.deliveryAddress)
+            pstmt.setString(6, order.specialInstructions)
 
-                val rs = pstmt.executeQuery()
+            val affectedRows = pstmt.executeUpdate()
+            
+            if (affectedRows > 0) {
+                val rs = pstmt.generatedKeys
                 if (rs.next()) {
                     return rs.getInt(1)
                 }
             }
         }
-        return -1
     }
-
+    return -1
+}
     /**
      * Insert multiple order items (batch insert)
      */
