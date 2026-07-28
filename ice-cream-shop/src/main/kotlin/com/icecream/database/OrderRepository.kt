@@ -5,6 +5,7 @@ import com.icecream.models.OrderItem
 import java.sql.ResultSet
 import java.sql.Statement
 import java.sql.Timestamp
+import java.sql.Types
 import java.time.LocalDateTime
 
 /**
@@ -18,9 +19,11 @@ class OrderRepository {
     fun getOrdersByCustomer(customerId: Int): List<Order> {
         val orders = mutableListOf<Order>()
         val query = """
-            SELECT * FROM orders 
-            WHERE customer_id = ? 
-            ORDER BY order_date DESC
+            SELECT o.*, pt.type_name as payment_type_name
+            FROM orders o
+            LEFT JOIN payment_types pt ON o.payment_type_id = pt.payment_type_id
+            WHERE o.customer_id = ? 
+            ORDER BY o.order_date DESC
         """.trimIndent()
 
         DatabaseConnection.getConnection().use { conn ->
@@ -133,49 +136,49 @@ class OrderRepository {
         return items
     }
 
-/**
- * Insert a new order
- * Returns the generated order ID
- */
-fun insertOrder(order: Order): Int {
-    val query = """
-        INSERT INTO orders (
-            customer_id, 
-            status, 
-            total_amount, 
-            payment_type_id, 
-            delivery_address, 
-            special_instructions
-        ) VALUES (?, ?, ?, ?, ?, ?)
-    """.trimIndent()
+    /**
+     * Insert a new order
+     * Returns the generated order ID
+     */
+    fun insertOrder(order: Order): Int {
+        val query = """
+            INSERT INTO orders (
+                customer_id, 
+                status, 
+                total_amount, 
+                payment_type_id, 
+                delivery_address, 
+                special_instructions
+            ) VALUES (?, ?, ?, ?, ?, ?)
+        """.trimIndent()
 
-    DatabaseConnection.getConnection().use { conn ->
-        conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS).use { pstmt ->
-            pstmt.setInt(1, order.customerId)
-            pstmt.setString(2, order.status)
-            pstmt.setDouble(3, order.totalAmount)
-            
-            if (order.paymentTypeId != null) {
-                pstmt.setInt(4, order.paymentTypeId)
-            } else {
-                pstmt.setNull(4, java.sql.Types.INTEGER)
-            }
-            
-            pstmt.setString(5, order.deliveryAddress)
-            pstmt.setString(6, order.specialInstructions)
+        DatabaseConnection.getConnection().use { conn ->
+            conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS).use { pstmt ->
+                pstmt.setInt(1, order.customerId)
+                pstmt.setString(2, order.status)
+                pstmt.setDouble(3, order.totalAmount)
+                
+                if (order.paymentTypeId != null) {
+                    pstmt.setInt(4, order.paymentTypeId)
+                } else {
+                    pstmt.setNull(4, Types.INTEGER)
+                }
+                
+                pstmt.setString(5, order.deliveryAddress)
+                pstmt.setString(6, order.specialInstructions)
 
-            val affectedRows = pstmt.executeUpdate()
-            
-            if (affectedRows > 0) {
-                val rs = pstmt.generatedKeys
-                if (rs.next()) {
-                    return rs.getInt(1)
+                val affectedRows = pstmt.executeUpdate()
+                if (affectedRows > 0) {
+                    val rs = pstmt.generatedKeys
+                    if (rs.next()) {
+                        return rs.getInt(1)
+                    }
                 }
             }
         }
+        return -1
     }
-    return -1
-}
+
     /**
      * Insert multiple order items (batch insert)
      */
