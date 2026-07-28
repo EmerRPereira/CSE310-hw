@@ -56,38 +56,6 @@ fun main() {
         println("   Make sure PostgreSQL is running and the database 'ice_cream_shop' exists.")
     }
     
-    // Load products from database or use fallback menu
-    val dbProducts = try {
-        productRepo.getAllAvailableProducts()
-    } catch (e: Exception) {
-        println("⚠️  Could not load products from database.")
-        emptyList()
-    }
-    
-    // Build menu from database or fallback
-    val menu = if (dbProducts.isNotEmpty()) {
-        dbProducts.mapIndexed { index, product ->
-            MenuItem(
-                id = index + 1,
-                name = product.name,
-                price = product.price,
-                category = product.categoryName ?: "Ice Cream"
-            )
-        }
-    } else {
-        // Fallback hardcoded menu
-        listOf(
-            MenuItem(1, "Simple Cone", 5.00, "Cone"),
-            MenuItem(2, "Double Cone", 8.00, "Cone"),
-            MenuItem(3, "Chocolate Sundae", 12.00, "Sundae"),
-            MenuItem(4, "Strawberry Sundae", 12.00, "Sundae"),
-            MenuItem(5, "Vanilla Milkshake", 15.00, "Milkshake"),
-            MenuItem(6, "Chocolate Milkshake", 15.00, "Milkshake"),
-            MenuItem(7, "Cream Ice Cream (1 scoop)", 4.00, "Ice Cream"),
-            MenuItem(8, "Cream Ice Cream (2 scoops)", 7.00, "Ice Cream")
-        )
-    }
-    
     // Main menu loop
     while (running) {
         println("\n--- MAIN MENU ---")
@@ -103,13 +71,13 @@ fun main() {
         print("\nChoose an option: ")
         
         when (readlnOrNull()?.toIntOrNull()) {
-            1 -> viewMenu(menu)
+            1 -> viewMenu(productRepo)  // ← Agora recarrega do banco
             2 -> customerMenu(scanner, customerRepo, currentCustomer) { currentCustomer = it }
-            3 -> shoppingCartMenu(scanner, menu, cart)
+            3 -> shoppingCartMenu(scanner, productRepo, cart)  // ← Agora com validação
             4 -> checkout(scanner, orderService, cart, currentCustomer)
             5 -> viewOrders(orderRepo, currentCustomer)
             6 -> reportsMenu(scanner, orderRepo)
-            7 -> adminMenu(scanner, menuService)
+            7 -> adminMenu(scanner, menuService, productRepo)  // ← Agora recarrega menu
             8 -> showHelp()
             9 -> {
                 println("\n🍦 Thank you for visiting Dachsice Ice Cream Shop!")
@@ -125,17 +93,24 @@ fun main() {
 }
 
 // =====================================================
-// VIEW MENU
+// VIEW MENU - CORRIGIDO (recarrega do banco)
 // =====================================================
-fun viewMenu(menu: List<MenuItem>) {
+fun viewMenu(productRepo: ProductRepository) {
+    val products = productRepo.getAllAvailableProducts()
+    
+    if (products.isEmpty()) {
+        println("\n📭 No products available.")
+        return
+    }
+    
     println("\n🍦 ICE CREAM MENU 🍦")
     println("=".repeat(40))
     
-    val categories = menu.map { it.category }.distinct()
+    val categories = products.map { it.categoryName ?: "Uncategorized" }.distinct()
     categories.forEach { category ->
         println("\n📌 ${category.uppercase()}:")
-        menu.filter { it.category == category }.forEach { item ->
-            println("  ${item.id}. ${item.name} - $${"%.2f".format(item.price)}")
+        products.filter { it.categoryName == category }.forEach { product ->
+            println("  ${product.productId}. ${product.name} - $${"%.2f".format(product.price)}")
         }
     }
     println("\n" + "=".repeat(40))
@@ -167,18 +142,42 @@ fun customerMenu(scanner: Scanner, repo: CustomerRepository, currentCustomer: Cu
             }
         }
         2 -> {
-            print("\nEnter customer name to search: ")
-            val name = readlnOrNull()?.trim() ?: ""
-            if (name.isNotEmpty()) {
-                val customers = repo.findCustomersByName(name)
-                if (customers.isEmpty()) {
-                    println("📭 No customers found matching '$name'")
-                } else {
-                    println("\n📋 SEARCH RESULTS:")
-                    customers.forEach { customer ->
-                        println("  #${customer.customerId} - ${customer.name} (${customer.email})")
+            println("\n--- SEARCH CUSTOMER ---")
+            println("1 - Search by name")
+            println("2 - Search by ID")
+            print("Choose option: ")
+            
+            when (readlnOrNull()?.toIntOrNull()) {
+                1 -> {
+                    print("Enter customer name: ")
+                    val name = readlnOrNull()?.trim() ?: ""
+                    if (name.isNotEmpty()) {
+                        val customers = repo.findCustomersByName(name)
+                        if (customers.isEmpty()) {
+                            println("📭 No customers found matching '$name'")
+                        } else {
+                            println("\n📋 SEARCH RESULTS:")
+                            customers.forEach { customer ->
+                                println("  #${customer.customerId} - ${customer.name} (${customer.email})")
+                            }
+                        }
                     }
                 }
+                2 -> {
+                    print("Enter customer ID: ")
+                    val id = readlnOrNull()?.toIntOrNull()
+                    if (id != null) {
+                        val customer = repo.findCustomerById(id)
+                        if (customer != null) {
+                            println("  #${customer.customerId} - ${customer.name} (${customer.email})")
+                        } else {
+                            println("📭 No customer found with ID $id")
+                        }
+                    } else {
+                        println("❌ Invalid ID!")
+                    }
+                }
+                else -> println("❌ Invalid option!")
             }
         }
         3 -> {
@@ -244,9 +243,9 @@ fun customerMenu(scanner: Scanner, repo: CustomerRepository, currentCustomer: Cu
 }
 
 // =====================================================
-// SHOPPING CART
+// SHOPPING CART - CORRIGIDO (valida disponibilidade)
 // =====================================================
-fun shoppingCartMenu(scanner: Scanner, menu: List<MenuItem>, cart: ShoppingCart) {
+fun shoppingCartMenu(scanner: Scanner, productRepo: ProductRepository, cart: ShoppingCart) {
     println("\n--- SHOPPING CART ---")
     println("1 - View cart")
     println("2 - Add item")
@@ -259,24 +258,28 @@ fun shoppingCartMenu(scanner: Scanner, menu: List<MenuItem>, cart: ShoppingCart)
     when (readlnOrNull()?.toIntOrNull()) {
         1 -> println("\n${cart}")
         2 -> {
-            viewMenu(menu)
-            print("\nEnter item number to add: ")
+            // Recarrega o menu sempre para mostrar apenas produtos disponíveis
+            viewMenu(productRepo)
+            
+            print("\nEnter product ID to add: ")
             val id = readlnOrNull()?.toIntOrNull()
-            if (id != null && id in 1..menu.size) {
-                val menuItem = menu[id - 1]
-                // Convert MenuItem to Product for the cart
-                val product = Product(
-                    productId = id,
-                    name = menuItem.name,
-                    price = menuItem.price,
-                    categoryName = menuItem.category,
-                    isAvailable = true
-                )
+            if (id != null) {
+                // Verifica disponibilidade diretamente no banco
+                val product = productRepo.findProductById(id)
+                if (product == null) {
+                    println("❌ Product not found!")
+                    return
+                }
+                if (!product.isAvailable) {
+                    println("❌ This product is currently unavailable!")
+                    return
+                }
+                
                 print("Quantity: ")
                 val quantity = readlnOrNull()?.toIntOrNull() ?: 1
                 if (quantity > 0) {
                     cart.addItem(product, quantity)
-                    println("✅ ${quantity}x ${menuItem.name} added to cart!")
+                    println("✅ ${quantity}x ${product.name} added to cart!")
                 } else {
                     println("❌ Invalid quantity!")
                 }
@@ -484,9 +487,9 @@ fun reportsMenu(scanner: Scanner, orderRepo: OrderRepository) {
 }
 
 // =====================================================
-// ADMIN MENU
+// ADMIN MENU - CORRIGIDO (recarrega menu após alterações)
 // =====================================================
-fun adminMenu(scanner: Scanner, menuService: MenuService) {
+fun adminMenu(scanner: Scanner, menuService: MenuService, productRepo: ProductRepository) {
     println("\n--- ADMIN - PRODUCT MANAGEMENT ---")
     println("1 - Add new product")
     println("2 - Toggle product availability")
@@ -513,18 +516,20 @@ fun adminMenu(scanner: Scanner, menuService: MenuService) {
             }
             
             menuService.addProduct(name, price, categoryId, description)
+            println("✅ Product added! Menu will update automatically.")
         }
         2 -> {
             print("\nEnter product ID: ")
             val id = readlnOrNull()?.toIntOrNull()
             if (id != null) {
                 menuService.toggleProductAvailability(id)
+                println("✅ Product availability toggled! Menu will update automatically.")
             } else {
                 println("❌ Invalid ID!")
             }
         }
         3 -> {
-            val products = ProductRepository().getAllProducts()
+            val products = productRepo.getAllProducts()
             if (products.isEmpty()) {
                 println("📭 No products found.")
             } else {
